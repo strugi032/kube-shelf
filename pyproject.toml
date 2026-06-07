@@ -1,0 +1,29 @@
+[project]
+name = "kube-image-inventory"
+version = "0.1.0"
+description = "Read-only web UI for listing container images running in a Kubernetes cluster."
+authors = [{ name = "Kubernetes Image Inventory Contributors" }]
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "jinja2",
+    "sqlalchemy",
+    "kubernetes",
+    "httpx",
+    "python-multipart",
+    "pydantic-settings",
+    "apscheduler",
+    "packaging"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

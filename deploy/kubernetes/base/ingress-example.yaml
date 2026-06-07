@@ -1,0 +1,22 @@
+# This is an EXAMPLE ingress configuration.
+# Do not expose this application publicly without external authentication.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kube-image-inventory
+  namespace: kube-image-inventory
+  annotations:
+    # Example: use an identity-aware proxy or external auth
+    # nginx.ingress.kubernetes.io/auth-url: "https://auth.example.com/verify"
+spec:
+  rules:
+    - host: inventory.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-image-inventory
+                port:
+                  number: 80

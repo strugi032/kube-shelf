@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - service-account.yaml
+  - rbac.yaml
+  - deployment.yaml
+  - service.yaml
+
+# Ingress is optional and not included in base by default
+# to prevent accidental public exposure.
+# - ingress-example.yaml
+
+images:
+  - name: kube-image-inventory
+    newName: kube-image-inventory
+    newTag: latest

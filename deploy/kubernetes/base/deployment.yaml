@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-image-inventory
+  namespace: kube-image-inventory
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kube-image-inventory
+  template:
+    metadata:
+      labels:
+        app: kube-image-inventory
+    spec:
+      serviceAccountName: kube-image-inventory
+      containers:
+        - name: server
+          image: kube-image-inventory:latest
+          ports:
+            - containerPort: 8000
+              name: http
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          env:
+            - name: DATABASE_URL
+              value: "sqlite:///./inventory.db"

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="summary-cards">
+    <div class="card">
+        <h3>Workloads</h3>
+        <p class="value">{{ summary.total_workloads }}</p>
+    </div>
+    <div class="card">
+        <h3>Images</h3>
+        <p class="value">{{ summary.total_images }}</p>
+    </div>
+    <div class="card status-outdated">
+        <h3>Outdated</h3>
+        <p class="value">{{ summary.outdated_images }}</p>
+    </div>
+    <div class="card status-unknown">
+        <h3>Unknown Freshness</h3>
+        <p class="value">{{ summary.unknown_freshness }}</p>
+    </div>
+    <div class="card status-critical">
+        <h3>Critical CVEs</h3>
+        <p class="value">{{ summary.critical_cves }}</p>
+    </div>
+    <div class="card status-high">
+        <h3>High CVEs</h3>
+        <p class="value">{{ summary.high_cves }}</p>
+    </div>
+</section>
+
+<div class="scan-info">
+    <p>Last scanned: {{ summary.last_scan_time.strftime('%Y-%m-%d %H:%M:%S') if summary.last_scan_time else 'Never' }}</p>
+</div>
+
+<section class="inventory-table">
+    <table>
+        <thead>
+            <tr>
+                <th>Namespace</th>
+                <th>Workload</th>
+                <th>Kind</th>
+                <th>Container</th>
+                <th>Image</th>
+                <th>Current</th>
+                <th>Latest</th>
+                <th>Freshness</th>
+                <th>CVEs (C/H)</th>
+                <th>Replicas</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for workload in workloads %}
+                {% for container in workload.containers %}
+                <tr>
+                    <td>{{ workload.namespace }}</td>
+                    <td>{{ workload.name }}</td>
+                    <td>{{ workload.kind }}</td>
+                    <td>{{ container.name }}</td>
+                    <td class="image-cell" title="{{ container.image_full }}">{{ container.image_repository }}</td>
+                    <td>{{ container.image_tag }}</td>
+                    <td>{{ container.latest_tag or '-' }}</td>
+                    <td>
+                        <span class="badge badge-{{ container.freshness_status }}">
+                            {{ container.freshness_status }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="cve-count critical">{{ container.critical_cve }}</span> / 
+                        <span class="cve-count high">{{ container.high_cve }}</span>
+                    </td>
+                    <td>{{ workload.available_replicas }}/{{ workload.desired_replicas }}</td>
+                </tr>
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}
