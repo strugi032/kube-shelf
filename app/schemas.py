@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import List, Dict, Optional
 from datetime import datetime
 
-class WorkloadImageBase(BaseModel):
+class ContainerBase(BaseModel):
     name: str
     image_full: str
     image_repository: str
@@ -18,10 +18,10 @@ class WorkloadImageBase(BaseModel):
     low_cve: int = 0
     unknown_cve: int = 0
 
-class WorkloadImageCreate(WorkloadImageBase):
+class ContainerCreate(ContainerBase):
     pass
 
-class WorkloadImage(WorkloadImageBase):
+class Container(ContainerBase):
     id: int
     workload_id: int
 
@@ -39,11 +39,11 @@ class WorkloadBase(BaseModel):
     last_observed: datetime = Field(default_factory=datetime.utcnow)
 
 class WorkloadCreate(WorkloadBase):
-    containers: List[WorkloadImageCreate] = []
+    containers: List[ContainerCreate] = []
 
 class Workload(WorkloadBase):
     id: int
-    containers: List[WorkloadImage] = []
+    containers: List[Container] = []
 
     class Config:
         from_attributes = True

@@ -16,11 +16,11 @@ class Workload(Base):
     annotations = Column(JSON, default={})
     last_observed = Column(DateTime, default=datetime.utcnow)
 
-    containers = relationship("WorkloadImage", back_populates="workload", cascade="all, delete-orphan")
+    containers = relationship("Container", back_populates="workload", cascade="all, delete-orphan")
 
     __table_args__ = (UniqueConstraint('namespace', 'name', 'kind', name='_workload_uc'),)
 
-class WorkloadImage(Base):
+class Container(Base):
     __tablename__ = "containers"
 
     id = Column(Integer, primary_key=True, index=True)

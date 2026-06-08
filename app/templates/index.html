@@ -15,7 +15,7 @@
         <p class="value">{{ summary.outdated_images }}</p>
     </div>
     <div class="card status-unknown">
-        <h3>Unknown Freshness</h3>
+        <h3>Unknown</h3>
         <p class="value">{{ summary.unknown_freshness }}</p>
     </div>
     <div class="card status-critical">
@@ -28,51 +28,87 @@
     </div>
 </section>
 
-<div class="scan-info">
-    <p>Last scanned: {{ summary.last_scan_time.strftime('%Y-%m-%d %H:%M:%S') if summary.last_scan_time else 'Never' }}</p>
+<div class="table-toolbar">
+    <div class="toolbar-left">
+        <input type="text" id="inventory-search" class="search-input" placeholder="Search workloads, images, or namespaces">
+    </div>
+    <div class="toolbar-right">
+        <span class="scan-timestamp">
+            Last scanned: {{ summary.last_scan_time.strftime('%Y-%m-%d %H:%M:%S') if summary.last_scan_time else 'Never' }}
+        </span>
+    </div>
 </div>
 
-<section class="inventory-table">
-    <table>
-        <thead>
-            <tr>
-                <th>Namespace</th>
-                <th>Workload</th>
-                <th>Kind</th>
-                <th>Container</th>
-                <th>Image</th>
-                <th>Current</th>
-                <th>Latest</th>
-                <th>Freshness</th>
-                <th>CVEs (C/H)</th>
-                <th>Replicas</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for workload in workloads %}
-                {% for container in workload.containers %}
+<div class="inventory-table-wrapper">
+    <div class="inventory-table-scroll">
+        <table id="inventory-table">
+            <thead>
                 <tr>
-                    <td>{{ workload.namespace }}</td>
-                    <td>{{ workload.name }}</td>
-                    <td>{{ workload.kind }}</td>
-                    <td>{{ container.name }}</td>
-                    <td class="image-cell" title="{{ container.image_full }}">{{ container.image_repository }}</td>
-                    <td>{{ container.image_tag }}</td>
-                    <td>{{ container.latest_tag or '-' }}</td>
-                    <td>
-                        <span class="badge badge-{{ container.freshness_status }}">
-                            {{ container.freshness_status }}
-                        </span>
-                    </td>
-                    <td>
-                        <span class="cve-count critical">{{ container.critical_cve }}</span> / 
-                        <span class="cve-count high">{{ container.high_cve }}</span>
-                    </td>
-                    <td>{{ workload.available_replicas }}/{{ workload.desired_replicas }}</td>
+                    <th class="col-ns">Namespace</th>
+                    <th class="col-workload">Workload</th>
+                    <th class="col-kind">Kind</th>
+                    <th class="col-container">Container</th>
+                    <th class="col-image">Image Repository</th>
+                    <th class="col-tag">Tag</th>
+                    <th class="col-latest">Latest</th>
+                    <th class="col-freshness">Freshness</th>
+                    <th class="col-cve">CVEs (C/H)</th>
+                    <th class="col-replicas">Replicas</th>
                 </tr>
+            </thead>
+            <tbody>
+                {% for workload in workloads %}
+                    {% for container in workload.containers %}
+                    <tr class="inventory-row">
+                        <td class="col-ns">{{ workload.namespace }}</td>
+                        <td class="col-workload"><strong>{{ workload.name }}</strong></td>
+                        <td class="col-kind">{{ workload.kind }}</td>
+                        <td class="col-container">{{ container.name }}</td>
+                        <td class="col-image image-cell" title="{{ container.image_full }}">{{ container.image_repository }}</td>
+                        <td class="col-tag"><code>{{ container.image_tag }}</code></td>
+                        <td class="col-latest"><code>{{ container.latest_tag or '-' }}</code></td>
+                        <td class="col-freshness">
+                            <span class="badge badge-{{ container.freshness_status }}">
+                                {{ container.freshness_status }}
+                            </span>
+                        </td>
+                        <td class="col-cve">
+                            <div class="cve-badge-group">
+                                <span class="cve-pill critical {% if container.critical_cve == 0 %}zero{% endif %}">{{ container.critical_cve }}</span>
+                                <span class="cve-pill high {% if container.high_cve == 0 %}zero{% endif %}">{{ container.high_cve }}</span>
+                            </div>
+                        </td>
+                        <td class="col-replicas">
+                            <strong>{{ workload.available_replicas }}</strong>/{{ workload.desired_replicas }}
+                        </td>
+                    </tr>
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
-        </tbody>
-    </table>
-</section>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Lightweight client-side search
+    document.getElementById('inventory-search').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.inventory-row');
+        
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(query) ? '' : 'none';
+        });
+    });
+</script>
+
+<style>
+    code {
+        font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+        font-size: 12px;
+        background-color: var(--gray-bg);
+        padding: 2px 4px;
+        border-radius: 4px;
+    }
+</style>
 {% endblock %}

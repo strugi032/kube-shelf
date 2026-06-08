@@ -17,6 +17,7 @@ spec:
       containers:
         - name: server
           image: kube-image-inventory:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
               name: http

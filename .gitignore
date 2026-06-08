@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+venv/
+.venv/
+
+# Database
+*.db
+
+# Environment & Secrets
+.env
+.kubeconfig
+.kube/
+
+# OS
+.DS_Store

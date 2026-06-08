@@ -3,12 +3,12 @@ from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, text
 import logging
 
 from .config import settings
 from .db import init_db, get_db
-from .models import Workload, WorkloadImage
+from .models import Workload, Container
 from .background import start_background_tasks, refresh_all
 
 logging.basicConfig(level=logging.INFO)
@@ -29,17 +29,17 @@ async def startup_event():
 async def index(request: Request, db: Session = Depends(get_db)):
     workloads = db.query(Workload).all()
     
-    total_images = db.query(WorkloadImage).count()
-    outdated_images = db.query(WorkloadImage).filter(WorkloadImage.freshness_status == "outdated").count()
-    unknown_freshness = db.query(WorkloadImage).filter(WorkloadImage.freshness_status == "unknown").count()
-    
-    cve_stats = db.query(
-        func.sum(WorkloadImage.critical_cve),
-        func.sum(WorkloadImage.high_cve)
+    total_images = db.query(Container).count()
+    outdated_images = db.query(Container).filter(Container.freshness_status == "outdated").count()
+    unknown_freshness = db.query(Container).filter(Container.freshness_status == "unknown").count()
+
+    vuln_summary = db.query(
+        func.sum(Container.critical_cve),
+        func.sum(Container.high_cve)
     ).first()
     
-    critical_cves = cve_stats[0] or 0
-    high_cves = cve_stats[1] or 0
+    critical_cves = vuln_summary[0] or 0
+    high_cves = vuln_summary[1] or 0
     
     last_scan = db.query(Workload).order_by(Workload.last_observed.desc()).first()
     last_scan_time = last_scan.last_observed if last_scan else None
@@ -66,7 +66,7 @@ async def health():
 async def ready(db: Session = Depends(get_db)):
     try:
         # Check DB connection
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         return {"status": "ready"}
     except Exception as e:
         logger.error(f"Readiness check failed: {e}")

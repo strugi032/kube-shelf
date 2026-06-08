@@ -2,7 +2,7 @@
 
 Kubernetes Image Inventory is a small read-only web UI that lists container images currently running in a Kubernetes cluster.
 
-![Kubernetes Image Inventory](examples/screenshot-placeholder.png)
+![Kubernetes Image Inventory](examples/screenshot.png)
 
 ## Current Functionality
 
@@ -90,3 +90,8 @@ The application requires `get`, `list`, and `watch` permissions for:
 - **Registry Rate Limits**: Heavy scanning may trigger rate limits on public registries (e.g., Docker Hub).
 - **In-Memory Cache**: Restarts will trigger a fresh scan of the cluster and registries.
 - **Trivy Integration**: Relies on Trivy Operator being installed in the cluster for CVE data.
+
+## Disclaimer
+
+This software is provided "as is", without warranty of any kind, express or implied. In no event shall the authors or copyright holders be liable for any claim, damages or other liability, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.
+

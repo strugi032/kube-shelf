@@ -1,8 +1,8 @@
 import logging
 from typing import List, Tuple
 from .k8s_client import get_k8s_client
-from .schemas import WorkloadCreate, WorkloadImageCreate
-from .models import Workload, WorkloadImage
+from .schemas import WorkloadCreate, ContainerCreate
+from .models import Workload, Container
 from .db import SessionLocal
 from datetime import datetime
 from sqlalchemy import delete
@@ -77,7 +77,7 @@ def _normalize_workload(item, kind: str) -> WorkloadCreate:
     if pod_template:
         for c in pod_template.spec.containers:
             repo, tag, full = parse_image(c.image)
-            containers.append(WorkloadImageCreate(
+            containers.append(ContainerCreate(
                 name=c.name,
                 image_full=c.image,
                 image_repository=repo,
@@ -130,7 +130,7 @@ def _save_inventory(workloads: List[WorkloadCreate]):
                             c.current_tag = c_data.image_tag
                             c.freshness_status = "unknown"
                     else:
-                        new_c = WorkloadImage(**c_data.model_dump())
+                        new_c = Container(**c_data.model_dump())
                         new_c.workload = existing_w
                         db.add(new_c)
             else:
@@ -146,7 +146,7 @@ def _save_inventory(workloads: List[WorkloadCreate]):
                 db.add(new_w)
                 db.flush()
                 for c_data in w_data.containers:
-                    new_c = WorkloadImage(**c_data.model_dump())
+                    new_c = Container(**c_data.model_dump())
                     new_c.workload_id = new_w.id
                     db.add(new_c)
         db.commit()
