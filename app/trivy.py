@@ -39,17 +39,32 @@ def collect_vulnerabilities():
             
             if not (container_name and resource_kind and resource_name):
                 continue
+
+            # Improve matching for ReplicaSets/Pods by stripping the hash suffix
+            # to match with parent Deployments/StatefulSets in our DB
+            match_name = resource_name
+            match_kind = resource_kind
+
+            if resource_kind == "ReplicaSet" and "-" in resource_name:
+                match_name = resource_name.rsplit("-", 1)[0]
+                match_kind = "Deployment"
+            elif resource_kind == "Pod" and "-" in resource_name:
+                # Pods usually have two suffixes: deployment-hash-podhash
+                parts = resource_name.rsplit("-", 2)
+                if len(parts) >= 2:
+                    match_name = parts[0]
+                    # Could be Deployment or StatefulSet, let's try to match by name
             
             summary = report.get("report", {}).get("summary", {})
             
             # Find matching container in our DB
+            # We try both the raw name/kind and our "guessed" parent name/kind
             container = db.query(Container).join(Container.workload).filter(
                 Container.name == container_name,
-                Container.workload.has(
-                    name=resource_name,
-                    kind=resource_kind,
-                    namespace=namespace
-                )
+                Container.workload.has(namespace=namespace)
+            ).filter(
+                (Container.workload.has(name=resource_name, kind=resource_kind)) |
+                (Container.workload.has(name=match_name, kind=match_kind))
             ).first()
             
             if container:
