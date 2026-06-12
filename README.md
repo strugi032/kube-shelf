@@ -2,6 +2,10 @@
 
 A Python CLI and web-based tool for inspecting Kubernetes workloads and reporting container images used across a cluster.
 
+## Screenshot
+
+![Kubernetes Image Inventory dashboard](examples/screenshot.png)
+
 ## Purpose
 
 `kube-image-inventory` provides a consolidated view of all container images running in your Kubernetes cluster, helping platform teams track image versions, freshness, and security posture.
